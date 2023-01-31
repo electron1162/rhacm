@@ -2,7 +2,7 @@ apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
   name: sample-network-policy-99
-  namespace: data-plane
+  namespace: argocd
   annotations:
     policy.open-cluster-management.io/categories: CM Configuration Management
     policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
@@ -132,7 +132,7 @@ apiVersion: apps.open-cluster-management.io/v1
 kind: PlacementRule
 metadata:
   name: sample-network-policy-99-placement
-  namespace: data-plane
+  namespace: argocd
   annotations:
     open-cluster-management.io/user-group: c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk
     open-cluster-management.io/user-identity: a3ViZTphZG1pbg==
@@ -155,7 +155,7 @@ apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
 metadata:
   name: sample-network-policy-99-placement
-  namespace: data-plane
+  namespace: argocd
 placementRef:
   name: sample-network-policy-99-placement
   apiGroup: apps.open-cluster-management.io
