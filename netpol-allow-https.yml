@@ -1,0 +1,166 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: sample-network-policy-99
+  namespace: data-plane
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+spec:
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: allow-http-and-https
+        spec:
+          namespaceSelector:
+            include:
+              - default
+              - data-plane
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: networking.k8s.io/v1
+                kind: NetworkPolicy
+                metadata:
+                  name: allow-http-and-https
+                spec:
+                  ingress:
+                    - ports:
+                        - port: 80
+                          protocol: TCP
+                        - port: 443
+                          protocol: TCP
+                  podSelector:
+                    matchLabels:
+                      app: java-sample
+          remediationAction: inform
+          severity: low
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: deny-all
+        spec:
+          namespaceSelector:
+            include:
+              - default
+              - data-plane
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: networking.k8s.io/v1
+                kind: NetworkPolicy
+                metadata:
+                  name: deny-all
+                spec:
+                  ingress: []
+                  podSelector: {}
+          remediationAction: inform
+          severity: low
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: allow-same-namespace
+        spec:
+          namespaceSelector:
+            include:
+              - default
+              - data-plane
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: networking.k8s.io/v1
+                kind: NetworkPolicy
+                metadata:
+                  name: allow-same-namespace
+                spec:
+                  ingress:
+                    - from:
+                        - podSelector: {}
+                  podSelector: {}
+          remediationAction: inform
+          severity: low
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: allow-pod-and-namespace-both
+        spec:
+          namespaceSelector:
+            include:
+              - default
+              - data-plane
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: networking.k8s.io/v1
+                kind: NetworkPolicy
+                metadata:
+                  name: allow-pod-and-namespace-both
+                spec:
+                  ingress:
+                    - from:
+                        - namespaceSelector:
+                            matchLabels:
+                              project: data-plane
+                          podSelector:
+                            matchLabels:
+                              app: java-sample
+                  podSelector:
+                    matchLabels:
+                      app: java-sample
+              remediationAction: inform
+              severity: low
+          severity: low
+  remediationAction: enforce
+status:
+  compliant: Compliant
+  placement:
+    - placementBinding: sample-network-policy-99-placement
+      placementRule: sample-network-policy-99-placement
+  status:
+    - clustername: arocluster2
+      clusternamespace: arocluster2
+      compliant: Compliant
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: PlacementRule
+metadata:
+  name: sample-network-policy-99-placement
+  namespace: data-plane
+  annotations:
+    open-cluster-management.io/user-group: c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk
+    open-cluster-management.io/user-identity: a3ViZTphZG1pbg==
+spec:
+  clusterConditions:
+    - status: "True"
+      type: ManagedClusterConditionAvailable
+  clusterSelector:
+    matchExpressions:
+      - key: clusterID
+        operator: In
+        values:
+          - ce394915-f490-45bc-9d0a-fcbb915ca120
+status:
+  decisions:
+    - clusterName: arocluster2
+      clusterNamespace: arocluster2
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: sample-network-policy-99-placement
+  namespace: data-plane
+placementRef:
+  name: sample-network-policy-99-placement
+  apiGroup: apps.open-cluster-management.io
+  kind: PlacementRule
+subjects:
+  - name: sample-network-policy-99
+    apiGroup: policy.open-cluster-management.io
+    kind: Policy
